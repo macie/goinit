@@ -1,0 +1,15 @@
+# .gitignore whitelist
+
+# Ignore everything
+*
+
+# But not these files...
+!/.gitignore
+!README.md
+!LICENSE
+
+!Makefile
+
+!goinit
+!tests/
+!tests/*.sh
