@@ -1,0 +1,167 @@
+#!/bin/sh
+#
+# goinit - initialize Go projects.
+# MIT license <https://github.com/macie/goinit>
+
+GOINIT_VERSION="2023.06.28"
+
+# DEFAULTS
+GOINIT_AUTHOR_DEFAULT="$(git config user.name)"
+GOINIT_LICENSE_DEFAULT="MIT"
+GOINIT_NAME_DEFAULT="go-$(hexdump -v -n4 -e'"%02x"' /dev/random)"
+GOINIT_DIR="."
+
+goinit_prompt() {
+	printf 'Choose:\n'
+
+	printf ' - module name / repo root path [%s]: ' "${GOINIT_NAME_DEFAULT}"
+	read -r GOINIT_REPO_PATH
+	if [ -z "${GOINIT_REPO_PATH}" ]; then
+		GOINIT_NAME="${GOINIT_NAME_DEFAULT}"
+	else
+		GOINIT_NAME="${GOINIT_REPO_PATH##*/}"
+	fi
+
+	printf ' - author [%s]: ' "${GOINIT_AUTHOR_DEFAULT}"
+	read -r GOINIT_AUTHOR
+	if [ -z "${GOINIT_AUTHOR}" ]; then
+		GOINIT_AUTHOR="${GOINIT_AUTHOR_DEFAULT}"
+	fi
+
+	printf ' - license [%s]: ' "${GOINIT_LICENSE_DEFAULT}"
+	read -r GOINIT_LICENSE
+	if [ -z "${GOINIT_LICENSE}" ]; then
+		GOINIT_LICENSE="${GOINIT_LICENSE_DEFAULT}"
+	fi
+}
+
+goinit_generate() {
+	printf '\nCreating:\n'
+
+	printf ' - project directory: %s\n' "${GOINIT_DIR}/${GOINIT_NAME}"
+	mkdir "${GOINIT_DIR}/${GOINIT_NAME}"
+	cd "${GOINIT_DIR}/${GOINIT_NAME}" || exit 1
+
+	goinit_git
+	goinit_markdown
+	goinit_go
+}
+
+goinit_git() {
+	printf ' - Git repository\n'
+	git init
+
+	if [ -n "${GOINIT_REPO_PATH}" ]; then
+	  # FIXME: check if $GOINIT_REPO_PATH is URL
+		printf ' - link to remote repository: origin at %s\n' "https://${GOINIT_REPO_PATH}.git"
+		git remote add origin "https://${GOINIT_REPO_PATH}.git"
+	fi
+
+	printf ' - .gitignore\n'
+	cat >.gitignore <<-'EOF'
+		# Whitelist for Go
+		# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+
+		# Ignore everything
+		*
+
+		# But not these files...
+		!/.gitignore
+
+		!*.go
+		!go.sum
+		!go.mod
+
+		!README.md
+		!LICENSE
+
+		!Makefile
+
+		# ...even if they are in subdirectories
+		!*/
+	EOF
+	
+}
+
+goinit_go() {
+	printf ' - Go module: %s\n' "${GOINIT_REPO_PATH:=$GOINIT_NAME}"
+	go mod init "${GOINIT_REPO_PATH:=$GOINIT_NAME}"
+
+	printf ' - main.go\n'
+	cat >main.go <<'EOF'
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	fmt.Fprintln(os.Stderr, "ERROR: not implemented")
+	os.Exit(1)
+}
+EOF
+
+}
+
+goinit_markdown() {
+	# shellcheck disable=SC2018,SC2019
+	LICENSE_SRC='https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/'$(echo "${GOINIT_LICENSE}" | tr 'A-Z' 'a-z')'.txt'
+
+	printf ' - LICENSE (from %s)\n' "${LICENSE_SRC}"
+	curl -fL "${LICENSE_SRC}" | sed -e '/---/,/---/d' -e '/./,$!d' -e "s/\[year\]/$(date +%Y)/g" -e "s/\[fullname\]/$GOINIT_AUTHOR/g" >LICENSE
+
+	printf ' - README.md\n'
+	cat >README.md <<-EOF
+		# ${GOINIT_NAME}
+
+		## License
+
+		[${GOINIT_LICENSE}](./LICENSE)
+	EOF
+}
+
+# MAIN ROUTINE
+{
+	case $# in
+		0)  # default
+			;;
+		1)
+		    case $1 in
+		        -h|--help)
+		          cat >&2 <<-'EOF'
+								goinit - initialize Go project.
+
+								Usage:
+								  goinit [options]
+
+								Options:
+								  -h, --help                      Show this help and exit.
+								  -v, --version                   Show version number and exit.
+							EOF
+		          exit 0
+		        	;;
+
+		        -v|--version)
+		          printf 'goinit %s' "${GOINIT_VERSION}" >&2
+		          exit 0
+		          ;;
+
+		        *)
+							printf 'ERROR: invalid usage. Try: %s -h\n' "$0" >&2
+							exit 64  # EX_USAGE
+		          ;;
+			esac
+			;;
+
+		*)
+			printf 'ERROR: invalid usage. Try: %s -h\n' "$0" >&2
+			exit 64  # EX_USAGE
+			;;
+	esac
+
+	goinit_prompt
+	goinit_generate
+
+	exit 0
+}
