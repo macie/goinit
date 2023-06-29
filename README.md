@@ -1,14 +1,20 @@
 # goinit
 
-**goinit** initialize Go project with Git repository.
+**goinit** initialize empty Go project with:
+
+- Git repository
+- README.md and LICENSE files.
 
 ## Usage
 
 ```sh
-$ ./goinit
+goinit
 ```
 
-## Install
+## Installation
+
+> For best user experience _goinit_ should be installed inside directory from
+> `PATH` environmental variable. 
 
 Using `curl`:
 
