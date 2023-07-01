@@ -22,7 +22,7 @@ debug:
 
 check: $(LINT)
 	@printf '# Static analysis: $(LINT) goinit' >&2
-	@$(LINT) goinit
+	@$(LINT) goinit ./tests/*.sh
 	
 test: $(TEST)
 	@echo '# Unit tests: $(TEST)' >&2
