@@ -19,6 +19,8 @@ debug:
 	@echo '# Development dependencies:'
 	@echo; $(LINT) -V || true
 	@echo; $(TEST) -v || true
+	@echo '# Environment variables:'
+	env || true
 
 check: $(LINT)
 	@printf '# Static analysis: $(LINT) goinit' >&2

@@ -4,11 +4,14 @@
 *
 
 # But not these files...
-!/.gitignore
+!.gitignore
 !README.md
 !LICENSE
 
 !Makefile
+!.github/
+!.github/workflows
+!.github/workflows/*.yml
 
 !goinit
 !tests/

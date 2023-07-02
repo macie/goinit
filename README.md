@@ -1,5 +1,7 @@
 # goinit
 
+[![CI](https://github.com/macie/goinit/actions/workflows/check.yml/badge.svg)](https://github.com/macie/goinit/actions/workflows/check.yml)
+
 **goinit** initialize empty Go project with:
 
 - Git repository
