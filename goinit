@@ -3,7 +3,7 @@
 # goinit - initialize Go projects.
 # MIT license <https://github.com/macie/goinit>
 
-GOINIT_VERSION="2023.06.28"
+GOINIT_VERSION="2023.07.03"
 
 # DEFAULTS
 GOINIT_AUTHOR_DEFAULT="$(git config user.name)"
@@ -130,10 +130,10 @@ goinit_markdown() {
 		    case $1 in
 		        -h|--help)
 		          cat >&2 <<-'EOF'
-								goinit - initialize Go project.
+								goinit - initialize Go project inside current (or given) directory
 
 								Usage:
-								  goinit [options]
+								  goinit [options] [parent_directory]
 
 								Options:
 								  -h, --help                      Show this help and exit.
@@ -148,8 +148,12 @@ goinit_markdown() {
 		          ;;
 
 		        *)
-							printf 'ERROR: invalid usage. Try: %s -h\n' "$0" >&2
-							exit 64  # EX_USAGE
+              if [ -d "$1" ]; then
+								GOINIT_DIR="$1"
+							else
+								printf 'ERROR: invalid usage. Try: %s -h\n' "$0" >&2
+								exit 64  # EX_USAGE
+							fi
 		          ;;
 			esac
 			;;
