@@ -8,7 +8,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Unit tests with unittest.sh
-      run: TERM=vt100 make test
+      run: make test
 
     - name: Static analysis with shellcheck
       run: make check
@@ -16,3 +16,14 @@ jobs:
     - name: Print debug info
       run: make debug
 
+  OpenBSD-VM:
+    runs-on: macos-12
+    name: OpenBSD in VirtualBox on MacOS
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Unit tests & static analysis
+      uses: vmactions/openbsd-vm@v0
+      with:
+        prepare: pkg_add git go shellcheck
+        run: make
