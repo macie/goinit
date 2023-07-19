@@ -3,10 +3,16 @@
 # goinit - initialize Go projects.
 # MIT license <https://github.com/macie/goinit>
 
-GOINIT_VERSION="2023.07.03"
+GOINIT_VERSION="2023.07.19"
 
 # DEFAULTS
-GOINIT_AUTHOR_DEFAULT="$(git config user.name)"
+GOINIT_IS_GIT_INSTALLED=$(command -v git >/dev/null && printf 'y')
+GOINIT_IS_GO_INSTALLED=$(command -v go >/dev/null && printf 'y')
+if [ "${GOINIT_IS_GIT_INSTALLED}" = 'y' ]; then
+	GOINIT_AUTHOR_DEFAULT="$(git config user.name)"
+else
+	GOINIT_AUTHOR_DEFAULT=''
+fi
 GOINIT_LICENSE_DEFAULT="MIT"
 GOINIT_NAME_DEFAULT="go-$(hexdump -v -n4 -e'"%02x"' /dev/random)"
 GOINIT_DIR="."
@@ -163,6 +169,13 @@ goinit_markdown() {
 			exit 64  # EX_USAGE
 			;;
 	esac
+
+	echo "> $GOINIT_IS_GIT_INSTALLED / $GOINIT_IS_GO_INSTALLED"
+
+	if [ "${GOINIT_IS_GIT_INSTALLED}" != 'y' ] || [ "${GOINIT_IS_GO_INSTALLED}" != 'y' ]; then
+		printf 'ERROR: cannot run without go and git. Check if both are installed' >&2
+		exit 78  # EX_CONFIG
+	fi
 
 	goinit_prompt
 	goinit_generate
